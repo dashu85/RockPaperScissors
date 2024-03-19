@@ -5,18 +5,22 @@
 //  Created by Marcus Benoit on 18.03.24.
 //
 
+
+
+
 import SwiftUI
 
 struct ContentView: View {
     private let rockPaperScissors = ["🪨", "📄", "✂️"]
+    private let winRockPaperScissors = [1, 2, 0]
     
-    @State private var winOrLose: Bool = .random()
-    @State private var roundNumber: Int = 1
+    @State private var winOrLose: Bool = Bool.random()
     
     @State private var score = 0
     @State private var cycleCount = 0
+    @State private var maxNumberOfGames = 10
     
-    @State var chosenByOpponent = Int.random(in: 0...2)
+    @State var chosenByComputer = Int.random(in: 0...2)
     @State private var answerText = ""
     @State private var finalMessage = ""
     @State private var showingFinalResult = false
@@ -41,16 +45,16 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                Text("\(cycleCount)")
+                Text("Round \(cycleCount + 1) of 10")
                 
                 Spacer()
                 
-                Text(winOrLose ? "How to beat" : "You have to lose to")
+                Text(winOrLose ? "You have to beat" : "You have to lose to")
                     .font(.title.bold())
                 
                 HStack(spacing: 40) {
                     ZStack {
-                        Text("\(rockPaperScissors[chosenByOpponent])")
+                        Text("\(rockPaperScissors[chosenByComputer])")
                             .grayBackground()
                     }
                     
@@ -65,8 +69,8 @@ struct ContentView: View {
                 HStack {
                     ForEach(0..<rockPaperScissors.count, id: \.self) { answer in
                         Button {
-                            answerText = itemTapped(number: answer)
-                            answerGiven()
+                            print("tapped Item: \(answer)")
+                            tappedOnItem(answer)
                             winOrLose.toggle()
                         } label: {
                             Text("\(rockPaperScissors[answer])")
@@ -76,7 +80,6 @@ struct ContentView: View {
                 }
                 
                 Text("\(answerText)")
-                
                 
                 Spacer()
                 
@@ -94,52 +97,47 @@ struct ContentView: View {
         }
     }
     
-    
-    func itemTapped(number: Int) -> String {
-        let answer: String = rockPaperScissors[number]
-        var answerTextInFunc: String = ""
+    func didUserWin(_ number: Int) -> String {
+        let winningAnswer = winRockPaperScissors[chosenByComputer]
         
-        if winOrLose == true {
-            if rockPaperScissors[chosenByOpponent] == "🪨" && answer == "📄" || rockPaperScissors[chosenByOpponent] == "📄" && answer == "✂️" || rockPaperScissors[chosenByOpponent] == "✂️" && answer == "🪨" {
-                answerTextInFunc = "Correct"
-                score += 1
-                cycleCount += 1
-                if cycleCount == 10 {
-                    showingFinalResult = true
-                }
-                return answerTextInFunc
-            }
-        } else if winOrLose == false {
-            if rockPaperScissors[chosenByOpponent] == "🪨" && answer == "✂️" || rockPaperScissors[chosenByOpponent] == "📄" && answer == "🪨" || rockPaperScissors[chosenByOpponent] == "✂️" && answer == "📄" {
-                answerTextInFunc = "Correct"
-                score += 1
-                cycleCount += 1
-                if cycleCount == 10 {
-                    showingFinalResult = true
-                }
-                return answerTextInFunc
-            } else {
-                answerText = "FALSE :("
-                score -= 1
-                cycleCount += 1
-                if cycleCount == 10 {
-                    showingFinalResult = true
-                }
-                return answerText
-            }
+        print("winningAnswer: \(winningAnswer)")
+    
+        var didWin: Bool
+        
+        if winOrLose {
+            didWin = rockPaperScissors[winningAnswer] == rockPaperScissors[number]
+        } else {
+            didWin = rockPaperScissors[winningAnswer] != rockPaperScissors[number]
         }
-        return answerText
+        
+        if rockPaperScissors[chosenByComputer] == rockPaperScissors[number] { didWin = false }
+        
+        return didWin ? "Correct" : "Wrong"
     }
     
-    func answerGiven() {
-        chosenByOpponent = Int.random(in: 0...2)
+    func tappedOnItem(_ byPlayer: Int) {
+        
+        answerText = didUserWin(byPlayer)
+        
+        score = answerText == "Correct" ? score + 1 : score - 1
+        
+        chosenByComputer = Int.random(in: 0...2)
+
+        
+        if cycleCount == 9 {
+            showingFinalResult = true
+        } else {
+            cycleCount += 1
+        }
     }
     
     func resetGame() {
         score = 0
-        answerText = ""
+        answerText = " "
         cycleCount = 0
     }
+    
+    
 }
 
 struct GrayBackground: ViewModifier {
@@ -151,7 +149,7 @@ struct GrayBackground: ViewModifier {
                         .fill(Color(red: 0.97, green: 0.97, blue: 0.97))
                         .opacity(0.6)
                 }
-                .font(.largeTitle)
+                .font(.system(size: 70))
         }
     }
 
