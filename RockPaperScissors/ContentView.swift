@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     private let rockPaperScissors = ["🪨", "📄", "✂️"]
     
-    @State private var winOrLose = false
+    @State private var winOrLose: Bool = .random()
     @State private var roundNumber: Int = 1
     
     @State private var score = 0
@@ -67,6 +67,7 @@ struct ContentView: View {
                         Button {
                             answerText = itemTapped(number: answer)
                             answerGiven()
+                            winOrLose.toggle()
                         } label: {
                             Text("\(rockPaperScissors[answer])")
                                 .grayBackground()
@@ -86,7 +87,7 @@ struct ContentView: View {
             }
             
         }
-        .alert("Hallo", isPresented: $showingFinalResult) {
+        .alert("Your final score is \(score)", isPresented: $showingFinalResult) {
             Button("Let's play again!", action: resetGame)
         } message: {
             Text("\(finalMessage)")
@@ -95,7 +96,7 @@ struct ContentView: View {
     
     
     func itemTapped(number: Int) -> String {
-        var answer: String = rockPaperScissors[number]
+        let answer: String = rockPaperScissors[number]
         var answerTextInFunc: String = ""
         
         if winOrLose == true {
